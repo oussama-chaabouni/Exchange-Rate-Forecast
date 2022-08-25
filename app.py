@@ -125,7 +125,7 @@ content = html.Div(id="page-content", style=CONTENT_STYLE)
 
 
 app.layout = html.Div([
-    html.Div([dcc.Location(id="url"), sidebar, content])
+    html.Div([dcc.Location(id="url", refresh=False), sidebar, content])
     
 ])
 
@@ -135,10 +135,18 @@ app.validation_layout = html.Div([sidebar, home.layout])
 
 #---------------------------------------------------------------
 
-
+data = {'currencies': ['EUR_USD', 'EUR_GBP', 'EUR_AUD', 'EUR_CAD','EUR_JPY','EUR_CHF','USD_JPY','USD_CAD','USD_CHF','GBP_USD','GBP_CHF','GBP_JPY']}
+df_currencies = pd.DataFrame(data)
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
+
+    for i in df_currencies['currencies']:
+        if pathname == "/page-1/" + i: 
+            
+            return scrape_data.layout
+
+
     if pathname == "/":
         return home.layout
 
@@ -147,20 +155,14 @@ def render_page_content(pathname):
     elif pathname == "/page-1":
         return scrape_data.layout
 
-
+    elif pathname == "/page-1/test":
+        return scrape_data.layout
 
     elif pathname == "/page-2":
         return forecast.layout
 
 
-    return html.Div(
-        [
-            html.H1("404: Not found", className="text-danger"),
-            html.Hr(),
-            html.P(f"The pathname {pathname} was not recognised..."),
-        ],
-        className="p-3 bg-light rounded-3",
-    )
+    
 
 
 

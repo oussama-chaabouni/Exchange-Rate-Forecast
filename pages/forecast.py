@@ -25,6 +25,11 @@ from statsmodels.tsa.stattools import kpss
 from dateutil.relativedelta import relativedelta
 import io
 import base64
+import pmdarima as pm
+
+
+
+
 df = pd.read_csv("./data/macro_data_final2.csv").set_index('Date')
 df = df.iloc[::-1]
 
@@ -96,6 +101,59 @@ def plot_forecasts(feature,model_ppi):
 
 
 
+def plot_forecasts_features(list,feature,model_ppi):
+  TEST_SIZE = 6
+  X=df[list]
+
+  y = df[feature]
+
+
+  df_=X.copy()
+  df_[feature] = y
+  train, test = df_.iloc[:-TEST_SIZE], df_.iloc[-TEST_SIZE:]
+  variables=feature
+
+    # Create traces
+  trace0 = go.Scatter(
+      x = df.index,
+      y = df[feature].values,
+      mode = 'lines',
+      name = feature)
+
+  x=df[feature].index.values
+  for i in range(1,n_periods+1):
+  
+    x=np.append(x,(datetime.strptime(df[feature].index[-1], "%Y-%m") + relativedelta(months=+i)).strftime("%Y-%m"))
+
+    
+  fc, confint = model_ppi.predict(n_periods=n_periods, return_conf_int=True, exogenous= test.drop(variables, axis=1))
+  index_of_fc = x[-n_periods:]
+
+
+  trace2 =go.Scatter(x=index_of_fc, y=confint[:, 0], name='ARIMA model 95% Lower CI', mode = 'lines',
+                    marker = dict(size=10, color='red'),opacity = 0.3)
+
+  trace3 =go.Scatter(x=index_of_fc, y=confint[:, 1],name='ARIMA model 95% Upper CI', mode = 'lines',
+                    marker = dict(size=10, color='red'),opacity = 0.3,fill='tonexty')
+
+  trace4 =go.Scatter(x=index_of_fc, y=fc,name='ARIMA model mean projected values', mode = 'lines',
+                    marker = dict(size=10, color='red'),opacity = 0.7)
+
+  trace5 =go.Scatter(x=[index_of_fc[0],df.index[-1]], y=[fc[0],df[feature][-1]],name='ARIMA model mean projected values', mode = 'lines',
+                    marker = dict(size=10, color='red'),opacity = 0.7)
+
+  layout = go.Layout(title= 'Forecasting 95% CI - ' + feature,
+      xaxis = dict(ticks='', nticks=43),
+      yaxis = dict(nticks=20), legend=dict(x=0.1, y=1))
+
+
+
+  data = [trace0,trace2,trace3,trace4,trace5]
+  fig =go.Figure(data=data, layout=layout)
+  return fig
+
+
+
 
 
 
@@ -135,6 +193,30 @@ def create_model(feature,TEST_SIZE):
                       stepwise=True, trace=True)
 
   return model
+
+
+def create_model_feat(list,feature,TEST_SIZE):
+
+  X=df[list]
+
+  y = df[feature]
+
+
+  df_=X.copy()
+  df_[feature] = y
+  train, test = df_.iloc[:-TEST_SIZE], df_.iloc[-TEST_SIZE:]
+  variables=feature
+  model = pm.auto_arima(train[feature], exogenous= train.drop(variables, axis=1),
+                        m=12, seasonal=False,stationary=stationary(feature),
+                      max_order=None, test='adf',error_action='ignore',  
+                           suppress_warnings=True,
+                      stepwise=True, trace=True)
+
+  return model
+
+
+
+
 
 
 def train_model(feature,TEST_SIZE,model):
@@ -188,14 +270,24 @@ layout =html.Div([
                                         html.Div([
                                             html.Img(id='the_graph_diag')
                                         ]),
-                                        
-                                     ])
+                                        dcc.Dropdown(
+                                                id='my_dropdown_features',
+                                                options=df.loc[:, df.columns != 'EUR/USD'].columns,
+                                                value=['producer-price-index-yy US'],
+                                                multi=True,
+                                                clearable=False,
+                                                style={"width": "50%",'textalign':"center"}
+                                            ),
+                                        ],style={"width": "100%",'textalign':"center"}),
+
+                                         html.Div([
+                                            dcc.Graph(id='the_graph_features_forecast')
+                                        ]),   
+                                        html.Div([
+                                            html.Img(id='the_graph_features')
+                                        ]),                                    
+                                     
                               ])
-
-
-        
-
-
 
     # If the user tries to reach a different page, return a 404 message
 
@@ -230,6 +322,38 @@ def update_forecast(my_dropdown_forecast):
     fi=plot_forecasts(i,mp)
 
     return fi
+
+
+@callback(
+    Output(component_id='the_graph_features', component_property='src'),
+    Output(component_id='the_graph_features_forecast', component_property='figure'),
+    [Input(component_id='my_dropdown_features', component_property='value')]
+)
+
+def create_model_features(my_dropdown_forecast):
+
+  feature='EUR/USD'
+  
+  fi =go.Figure()
+  model=create_model_feat(my_dropdown_forecast,feature,6)
+
+  m=model.plot_diagnostics(figsize=(14,10))
+  with open('./models/temp_models/model_EUR_USD','wb') as f:
+      pickle.dump(m,f)
+
+  buf = io.BytesIO()
+  m.savefig(buf, format = "png") # save to the above file object
+  data = base64.b64encode(buf.getbuffer()).decode("utf8") # encode to html elements
+
+  fi=plot_forecasts_features(my_dropdown_forecast,feature,model)
+
+  return "data:image/png;base64,{}".format(data),fi
+
+
+
+
+
+
 
 
 
