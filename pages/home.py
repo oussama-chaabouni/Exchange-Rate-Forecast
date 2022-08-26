@@ -31,7 +31,7 @@ import io
 import base64
 from datetime import date
 
-indicators_US=['producer-price-index-yy','consumer-price-index-yy','ism-manufacturing-pmi','ism-non-manufacturing-pmi',
+indicators_United_States=['producer-price-index-yy','consumer-price-index-yy','ism-manufacturing-pmi','ism-non-manufacturing-pmi',
 'consumer-confidence-index','retail-sales-yy','retail-sales-ex-autos-mm','durable-goods-orders','nonfarm-payrolls',
 'industrial-production-mm','trade-balance','housing-starts',
 'new-home-sales','building-permits','existing-home-sales','unemployment-rate','adp-nonfarm-employment-change',
@@ -39,96 +39,137 @@ indicators_US=['producer-price-index-yy','consumer-price-index-yy','ism-manufact
 'business-inventories-mm','pce-price-index-yy','pce-price-index-mm','core-pce-price-index-yy','core-pce-price-index-mm',
 'average-hourly-earnings-mm','fed-interest-rate-decision']
 
-indicators_EU=['producer-price-index-yy','consumer-price-index-yy',
+indicators_European_Union=['producer-price-index-yy','consumer-price-index-yy',
 'markit-manufacturing-pmi','markit-services-pmi','consumer-confidence-indicator',
 'retail-sales-yy','industrial-production-yy','trade-balance','construction-output-yy',
 'unemployment-rate','markit-composite-pmi','ecb-deposit-rate-decision','zew-indicator-of-economic-sentiment','ecb-interest-rate-decision']
+
+
+indicators_United_Kingdom=['average-weekly-earnings-regular-pay','average-weekly-earnings-total-pay','claimant-count-change',
+'unemployment-rate','cpi-yy','core-cpi-mm','core-cpi-yy','ppi-input-mm',
+'ppi-input-yy','ppi-output-mm','ppi-output-yy','rpi-mm','rpi-yy'
+]
+
 
 indicators_interest = ['snb-interest-rate-decision','boe-interest-rate-decision']
 
 countries =['switzerland','united-kingdom']
 
+data = {'currencies': ['EUR_USD', 'EUR_GBP', 'EUR_AUD', 'EUR_CAD','EUR_JPY','EUR_CHF','USD_JPY','USD_CAD','USD_CHF','GBP_USD','GBP_CHF','GBP_JPY']}
+df_currencies_ = pd.DataFrame(data)
 
 df = pd.read_csv("./data/macro_data_final2.csv").set_index('Date')
 df = df.iloc[::-1]
 
-data_frame=pd.read_csv("./data/macro_data_final2.csv")
+#data_frame=pd.read_csv("./data/macro_data_final2.csv")
 #data_frame = data_frame.iloc[::-1]
 listoptions = []
 
 listindicators = []
-listindicators_eu = []
-for i in list(df.columns):
-    dicti={}
-    dicti['label'] = i
-    dicti['value'] = i
-    listoptions.append(dicti)
+listindicators_European_Union = []
+listindicators_United_Kingdom = []
+listindicators_United_States = []
 
-for i in list(indicators_US):
+# for i in list(df.columns):
+#     dicti={}
+#     dicti['label'] = i
+#     dicti['value'] = i
+#     listoptions.append(dicti)
+
+for i in list(indicators_United_States):
     dic={}
     dic['label'] = i
     dic['value'] = i
-    listindicators.append(dic)
+    listindicators_United_States.append(dic)
 
-for i in list(indicators_EU):
+for i in list(indicators_European_Union):
     dic={}
     dic['label'] = i
     dic['value'] = i
-    listindicators_eu.append(dic)
+    listindicators_European_Union.append(dic)
+
+
+for i in list(indicators_United_Kingdom):
+    dic={}
+    dic['label'] = i
+    dic['value'] = i
+    listindicators_United_Kingdom.append(dic)
 
 PAGE_SIZE = 10
 
 
-columns = list(df.columns)
+
+SIDEBAR_STYLE = {
+    "position": "fixed",
+    "width": "20rem",
+    "padding": "2rem 1rem",
+    "background-color": "#f8f9fa",
+}
+
+CONTENT_STYLE = {
+    "margin-left": "25rem",
+    "margin-right": "2rem",
+    "padding": "2rem 1rem",
+    "font-size":"15px",
+}
+	
 
 
-
-
-def update_data(end_date):
-    file_name = './data/united-states.{}.csv'
+def update_data(end_date,currency,c1,c2):
+    import re
+    file_name = './data/'+c1 +'.{}.csv'
     df_list = []
-    for i in indicators_US:   
-        df_list.append(pd.read_csv(file_name.format(i), sep='\t',header=0,names=['Date', i +' US', 'ForecastValue','PreviousValue']))
 
-    for j in  range(0,len(indicators_US)):
+    li1= re.sub("(^|[_])\s*([a-zA-Z])", lambda p: p.group(0).upper(), c1.replace("-", "_"))
+    li2= re.sub("(^|[_])\s*([a-zA-Z])", lambda p: p.group(0).upper(), c2.replace("-", "_"))
+
+
+
+
+    for i in globals()['indicators_'+ li1]:
+        df_list.append(pd.read_csv(file_name.format(i), sep='\t',header=0,names=['Date', i + ' '+ c1, 'ForecastValue','PreviousValue']))
+
+    for j in  range(0,len(globals()['indicators_'+ li1])):
         df_list[j]['Date'] = pd.to_datetime(df_list[j]['Date'], format='%Y-%m').dt.strftime("%Y-%m")
         df_list[j] = df_list[j].set_index('Date').sort_values(by="Date", ascending=[0])
         df_list[j] = df_list[j][~df_list[j].index.duplicated(keep='first')]    
         
 
-    data_frames=[[]for i in range (len(indicators_US))]
-    for k in  range(0,len(indicators_US)):
+    data_frames=[[]for i in range (len(globals()['indicators_'+ li1]))]
+    for k in  range(0,len(globals()['indicators_'+ li1])):
         data_frames[k]=df_list[k][[df_list[k].columns[0]]] 
 
     df_merged = reduce(lambda  left,right: pd.merge(left,right,on='Date',
                                                 how='outer'), data_frames)
     df_merged = df_merged.sort_values(by="Date", ascending=[0])
     df_merged [~df_merged .index.duplicated(keep='first')]
-    df_merged['fed-interest-rate-decision US'] = df_merged['fed-interest-rate-decision US'].bfill().ffill()
-    
 
+
+    df_merged[df_merged.filter(like='interest-rate').columns] = df_merged[df_merged.filter(like='interest-rate').columns].bfill().ffill()
+    
+    
 
     
     mask = (df_merged.index >= '2007-05') & (df_merged.index <= end_date)
     df_merged = df_merged.loc[mask]
 
-    df_merged.loc[:, df_merged.columns != 'fed-interest-rate-decision US'] = df_merged.loc[:, df_merged.columns != 'fed-interest-rate-decision US'].ffill()
+    df_merged = df_merged.ffill()
 
 ###########################################################
 
-    file_name_euro = './data/european-union.{}.csv'
+    file_name_euro = './data/'+c2+'.{}.csv'
     df_list_euro = []
-    for i in indicators_EU:   
-        df_list_euro.append(pd.read_csv(file_name_euro.format(i), sep='\t',header=0,names=['Date', i +' EuroZone', 'ForecastValue','PreviousValue']))
+    for i in globals()['indicators_'+ li2]:   
+        df_list_euro.append(pd.read_csv(file_name_euro.format(i), sep='\t',header=0,names=['Date', i + ' '+ c2, 'ForecastValue','PreviousValue']))
 
-    for j in  range(0,len(indicators_EU)):
+    for j in  range(0,len(globals()['indicators_'+ li2])):
         df_list_euro[j]['Date'] = pd.to_datetime(df_list_euro[j]['Date'], format='%Y-%m').dt.strftime("%Y-%m")
         df_list_euro[j] = df_list_euro[j].set_index('Date').sort_values(by="Date", ascending=[0])
         df_list_euro[j] = df_list_euro[j][~df_list_euro[j].index.duplicated(keep='first')]    
         
 
-    data_frames_EuroZone=[[]for i in range (len(indicators_EU))]
-    for k in  range(0,len(indicators_EU)):
+    data_frames_EuroZone=[[]for i in range (len(globals()['indicators_'+ li2]))]
+    for k in  range(0,len(globals()['indicators_'+ li2])):
         data_frames_EuroZone[k]=df_list_euro[k][[df_list_euro[k].columns[0]]]  
 
 
@@ -137,7 +178,7 @@ def update_data(end_date):
                                                 how='outer'), data_frames_EuroZone)
     df_merged_EuroZone = df_merged_EuroZone.sort_values(by="Date", ascending=[0])
     df_merged_EuroZone [~df_merged_EuroZone .index.duplicated(keep='first')]
-    df_merged_EuroZone['ecb-interest-rate-decision EuroZone'] = df_merged_EuroZone['ecb-interest-rate-decision EuroZone'].bfill().ffill()
+    df_merged_EuroZone[df_merged_EuroZone.filter(like='interest-rate').columns] = df_merged_EuroZone[df_merged_EuroZone.filter(like='interest-rate').columns].bfill().ffill()
 
     mask = (df_merged_EuroZone.index >= '2007-05') & (df_merged_EuroZone.index <= end_date)
     df_merged_EuroZone = df_merged_EuroZone.loc[mask]
@@ -145,8 +186,8 @@ def update_data(end_date):
     df_merged_EuroZone.loc[:, df_merged_EuroZone.columns != 'fed-interest-rate-decision US'] = df_merged_EuroZone.loc[:, df_merged_EuroZone.columns != 'fed-interest-rate-decision US'].ffill()
 
 ######################################################
-
-    with open('./data/EURUSD=X.pkl', 'rb') as f:
+    curr = currency.replace("_", "")
+    with open('./data/'+curr+'=X.pkl', 'rb') as f:
         dfs = pickle.load(f)
 
     dfr0 = pd.read_csv("./data/united-kingdom.boe-interest-rate-decision.csv", sep='\t')
@@ -164,7 +205,7 @@ def update_data(end_date):
 
     mask = (dfs.index >= '2007-05') & (dfs.index <= end_date)
     dfs = dfs.loc[mask]
-    data_frames_Merged=[df_merged,df_merged_EuroZone,dfr0[['boe-interest-rate-decision UK']],dfr1[['snb-interest-rate-decision Switzerland']],dfs['EUR/USD'].iloc[::-1]]
+    data_frames_Merged=[df_merged,df_merged_EuroZone,dfr0[['boe-interest-rate-decision UK']],dfr1[['snb-interest-rate-decision Switzerland']],dfs[curr].iloc[::-1]]
 
 
 
@@ -199,54 +240,57 @@ def update_data(end_date):
     #         dfm[i]=dfm[i].shift(-1, axis = 0)
     #         dfm[i] = dfm[i].ffill(limit=None)
     #         dfm = dfm.rename(columns={i: i + ' lagged'})
-
-        
-
-            
-        
-
-    
-    dfm.to_csv('./data/macro_data_final2.csv',index=True)
+  
+    dfm.to_csv('./data/macro_data_'+currency+'.csv',index=True)
 
 
-def update_graph_correlation():    
-    df_corr = df.corr() # Generate correlation matrix
+for i in df_currencies_['currencies']:
+    def update_graph_correlation(i):  
 
-    fig = go.Figure()
-    fig.add_trace(
-        go.Heatmap(
-            x = df_corr.columns,
-            y = df_corr.index,
-            z = np.array(df_corr)
+        df =pd.read_csv("./data/macro_data_"+i+".csv").set_index('Date')
+        df_corr = df.corr() # Generate correlation matrix
+
+        fig = go.Figure()
+        fig.add_trace(
+            go.Heatmap(
+                x = df_corr.columns,
+                y = df_corr.index,
+                z = np.array(df_corr)
+            )
         )
-    )
-    fig.update_layout(
-        autosize=False,
-        width=1200,
-        height=1200,
-#         margin=dict(
-#             l=50,
-#             r=50,
-#             b=100,
-#             t=100,
-#             pad=4
-#         ),
+        fig.update_layout(
+            autosize=False,
+            width=1200,
+            height=1200,
+    #         margin=dict(
+    #             l=50,
+    #             r=50,
+    #             b=100,
+    #             t=100,
+    #             pad=4
+    #         ),
 
-    )
-
-    return [dcc.Graph(figure=fig)]
+        )
+        return [dcc.Graph(figure=fig)]
 def get_prediction():
     return [dcc.Graph(figure=model_performance('lgbm_clf')[1])]
 
+def generate_currency_home_button_home(currencies):
+
+    return dbc.DropdownMenuItem(
+                      str(currencies),
+                      className="mr-2",
+                      href='/home/'+currencies,
+                      id=str(currencies)+'-home')
 
 
-
-layout = html.Div([
+def generate_currency_home(currencies,country1,country2):
+    return html.Div([
                    html.Div([
                                             dcc.Dropdown(
-                                                id='my_dropdown',
+                                                id='my_dropdown'+str(currencies),
                                                 options=listoptions,
-                                                value=['EUR/USD'],
+                                                value=[currencies.split('/page-1/', 1)[-1].replace("_", "")],
                                                 multi=True,
                                                 clearable=False,
                                                 style={"width": "50%",'textalign':"center"}
@@ -255,18 +299,18 @@ layout = html.Div([
                                         
 
                                         html.Div([
-                                            dcc.Graph(id='the_graph')
+                                            dcc.Graph(id='the_graph'+str(currencies))
                                         ]),
                                         html.Div([
-                                            dcc.Graph(id='the_graph_corr',style={'position':"center"})
+                                            dcc.Graph(id='the_graph_corr'+str(currencies),style={'position':"center"})
                                         ]),
 
                                                 html.Button(
                                                     ['Update'],
-                                                    id='btn'
+                                                    id='btn'+str(currencies)
                                                 ),
                                                 dcc.DatePickerSingle(
-                                                    id='my-date-picker-single',
+                                                    id='my-date-picker-single'+str(currencies),
                                                     display_format='MM YYYY',
                                                     min_date_allowed=date(2007, 6, 1),
                                                     max_date_allowed=date(2030, 9, 1),
@@ -277,9 +321,9 @@ layout = html.Div([
                                                     
                                                     html.Div(dash_table.DataTable( 
                                                         
-                                                    id='datatable-paging',   
-                                                    data=data_frame.to_dict('records'),
-                                                    columns=[{'id': c, 'name': c} for c in data_frame.columns],
+                                                    id='datatable-paging'+str(currencies),   
+                                                    data=pd.read_csv("./data/macro_data_"+str(currencies)+'.csv').iloc[::-1].to_dict('records'),
+                                                    columns=[{'id': c, 'name': c} for c in pd.read_csv("./data/macro_data_"+str(currencies)+'.csv').iloc[::-1].columns],
                                                         page_current=0,
                                                     page_size=PAGE_SIZE,
                                                     page_action='custom',                                                      
@@ -293,25 +337,121 @@ layout = html.Div([
                     },
                     'backgroundColor': 'tomato',
                     'color': 'white'
-                } for col in df.columns                                                            
+                } for col in pd.read_csv("./data/macro_data_"+str(currencies)+'.csv').iloc[::-1].columns                                                            
                                                         ],
                                                     style_table={'height': '100%', 'overflowY': 'auto'}
                                                     
                                                     )   
                                                     ),
 
-                                        html.Div(children=update_graph_correlation(),id="graph_correlation"),
+                                        html.Div(children=update_graph_correlation(currencies),id="graph_correlation"+str(currencies)),
                                         #html.Div(children=get_prediction(),id='stats_prediction')
        ])
-                                            
-@callback(
-    Output(component_id='the_graph_corr', component_property='figure'),
-    [Input(component_id='my_dropdown', component_property='value')]
-)
 
-def update_graph_correlation_(my_dropdown):    
+sidebar_home = html.Div(
+    [
+        html.H2("Select Exchange Rate", className="display-4"),
+        html.Hr(),
+        # html.P(
+        #     "A simple sidebar layout with navigation links", className="lead"
+        # ),
+
+
+
+        
+        dbc.Nav(
+            [
+            dbc.DropdownMenu(
+            children=[
+
+                generate_currency_home_button_home(i) for i in df_currencies_['currencies']
+            ],
+            
+                        nav=True,
+            in_navbar=True,
+            label="More",
+        ),
+            ],
+            vertical=False,
+            pills=True,
+        ),
+    ],
+    style=SIDEBAR_STYLE,
+)
+content_home = html.Div(id="page-content-home", style=CONTENT_STYLE)
+
+
+layout = html.Div([
+    html.Div([dcc.Location(id="url_home"), sidebar_home, content_home])
+    
+])
+
+
+
+
+@callback(Output("page-content-home", "children"), [Input("url_home", "pathname")])
+
+
+
+def render_page_content_home(pathname="/home"):
+
+    for i in df_currencies_['currencies']:
+        if pathname == "/home/" + i: 
+            if i=='EUR_USD':
+                return generate_currency_home(i,'European_Union','United_States')
+
+            if i=='EUR_GBP':
+
+                return generate_currency_home(i,'European_Union','United_Kingdom')
+
+            if i=='EUR_AUD':
+
+                return generate_currency_home(i,'European_Union','Australia')
+
+            if i=='EUR_CAD':
+
+                return generate_currency_home(i,'European_Union','Canada')
+
+            if i=='EUR_JPY':
+
+                return generate_currency_home(i,'European_Union','Japan')
+
+
+            if i=='EUR_CHF':
+
+                return generate_currency_home(i,'European_Union','Switzerland')
+
+            if i=='USD_JPY':
+
+                return generate_currency_home(i,'United_States','Japan')
+
+            if i=='USD_CAD':
+
+                return generate_currency_home(i,'United_States','Canada')
+
+            if i=='USD_CHF':
+
+                return generate_currency_home(i,'United_States','Switzerland')
+
+            if i=='GBP_USD':
+
+                return generate_currency_home(i,'United_Kingdom','United States')
+
+
+            if i=='GBP_CHF':
+
+                return generate_currency_home(i,'United_Kingdom','Switzerland')
+
+
+            if i=='GBP_JPY':
+
+                return generate_currency_home(i,'United_Kingdom','Japan')   
+
+
+def update_graph_correlation_(my_dropdown,path):
+    currency = path.split('/home/', 1)[-1]
      # Generate correlation matrix
-    df = pd.read_csv("./data/macro_data_final2.csv").set_index('Date')
+    df = pd.read_csv("./data/macro_data_"+currency+".csv").set_index('Date')
     df = df.iloc[::-1]
     df1=pd.DataFrame()
     for label in my_dropdown:
@@ -345,43 +485,74 @@ def update_graph_correlation_(my_dropdown):
 
     return fig
 
-@callback(
-    Output('datatable-paging', 'data'),
-    Input('datatable-paging', "page_current"),
-    Input('datatable-paging', "page_size"),
-    Input('my-date-picker-single', 'date'),
-    Input("btn", "n_clicks")
-    
-    )
+for i in df_currencies_['currencies']:
+    callback(
+        Output(component_id='the_graph_corr'+i, component_property='figure'),
+        [Input(component_id='my_dropdown'+i, component_property='value')],
+        State('url_home', 'pathname')
+    )(update_graph_correlation_)
 
-def update_table(page_current,page_size,date_value,n_clicks):
+
+def update_table(page_current,page_size,date_value,n_clicks,path):
+
+    currency = path.split('/home/', 1)[-1]
+
+    if currency == 'EUR_USD':
+        c1='united-states'
+        c2='european-union'
+        
+    elif currency == 'EUR_GBP':
+        c1='european-union'
+        c2='united-kingdom'
+
+
+    print(currency)
     date_object = date.fromisoformat(date_value)
     date_string = date_object.strftime('%Y-%m')
     if n_clicks is None:
         #update_data(date_string)
-        data_frame=pd.read_csv("./data/macro_data_final2.csv")
+        data_frame=pd.read_csv("./data/macro_data_"+currency+".csv")
         return data_frame.iloc[
                 page_current*page_size:(page_current+ 1)*page_size
                 ].to_dict('records')
 
     #data_frame=update_data()
-    update_data(date_string)
-    data_frame=pd.read_csv("./data/macro_data_final2.csv")
+    update_data(date_string,currency,c1,c2)
+    data_frame=pd.read_csv("./data/macro_data_"+currency+".csv")
     return data_frame.iloc[
                 page_current*page_size:(page_current+ 1)*page_size
             ].to_dict('records')
 
 
+for i in df_currencies_['currencies']:
+
+    callback(
+        Output('datatable-paging'+i, 'data'),
+        Input('datatable-paging'+i, "page_current"),
+        Input('datatable-paging'+i, "page_size"),
+        Input('my-date-picker-single'+i, 'date'),
+        Input("btn"+i, "n_clicks"),
+        State('url_home', 'pathname')
+        
+        )(update_table)
 
 
-@callback(
-    Output(component_id='the_graph', component_property='figure'),
-    [Input(component_id='my_dropdown', component_property='value')]
-)
 
-def update_graph(my_dropdown):
+def update_graph(my_dropdown,path):
     import plotly
-    df = pd.read_csv("./data/macro_data_final2.csv").set_index('Date')
+
+    currency = path.split('/home/', 1)[-1]
+
+    if currency == 'EUR_USD':
+        c1='united-states'
+        c2='european-union'
+        
+    elif currency == 'EUR_GBP':
+        c1='european-union'
+        c2='united-kingdom'
+
+
+    df = pd.read_csv("./data/macro_data_"+currency+".csv").set_index('Date')
     df = df.iloc[::-1]
     full_data= df.copy()
     full_data['Date'] = full_data.index
@@ -408,3 +579,36 @@ def update_graph(my_dropdown):
    
        
     return fig
+
+
+
+for i in df_currencies_['currencies']:
+    callback(
+        Output(component_id='the_graph'+i, component_property='figure'),
+        [Input(component_id='my_dropdown'+i, component_property='value')],
+        State('url_home', 'pathname')
+    )(update_graph)
+
+
+def update_options(search_value,path):
+
+    listoptions = []
+    currency = path.split('/home/', 1)[-1]
+
+    df =pd.read_csv("./data/macro_data_"+currency+".csv").set_index('Date')
+
+    for i in list(df.columns):
+        dicti={}
+        dicti['label'] = i
+        dicti['value'] = i
+        listoptions.append(dicti)
+        
+    return listoptions
+
+for i in df_currencies_['currencies']:
+
+    callback(
+        Output('my_dropdown'+i, "options"),
+        Input('my_dropdown'+i, "search_value"),
+        State('url_home', 'pathname')
+    )(update_options)

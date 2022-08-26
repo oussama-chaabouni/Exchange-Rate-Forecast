@@ -144,7 +144,7 @@ data = {'currencies': ['EUR_USD', 'EUR_GBP', 'EUR_AUD', 'EUR_CAD','EUR_JPY','EUR
 
 df_currencies = pd.DataFrame(data)
 
-def generate_team_button(currencies):
+def generate_currency_button(currencies):
 
     return dbc.DropdownMenuItem(
                       str(currencies),
@@ -246,9 +246,9 @@ def generate_currency(currencies,country1,country2):
 
 
                                                             html.Div([
-                                                                    html.Button('Update '+ currencies +' Exchange rate', id='submit-val-eur-usd'+str(currencies), n_clicks=0),
+                                                                    html.Button('Update '+ currencies +' Exchange rate', id='submit-val-rate'+str(currencies), n_clicks=0),
 
-                                                                    html.Div(id='container-button-basic-eur-usd'+str(currencies),
+                                                                    html.Div(id='container-button-basic-rate'+str(currencies),
                                                                             children='Enter a value and press submit')
                                                             ],style={"width": "50%",'textalign':"center",'display': 'inline-block'}),
 
@@ -273,7 +273,7 @@ sidebar2 = html.Div(
             dbc.DropdownMenu(
             children=[
 
-                generate_team_button(i) for i in df_currencies['currencies']
+                generate_currency_button(i) for i in df_currencies['currencies']
             ],
             
                         nav=True,
@@ -309,107 +309,7 @@ def render_page_content_(pathname="/page-1"):
         if pathname == "/page-1/" + i: 
             if i=='EUR_USD':
                 return generate_currency(i,'European_Union','United_States')
-            #     return html.Div([
-                                                
-            #                                                     html.Div([
-            #                                                         html.Div([
-            #                                                             dcc.Dropdown(
-            #                                                                 id='my_dropdown2',
-            #                                                                 options=indicators_United_States,
-            #                                                                 value=['producer-price-index-yy'],
-            #                                                                 multi=True,
-            #                                                                 clearable=False,
-            #                                                                 style={"width": "100%"}
-            #                                                             ),
-
-            #                                                             html.Div([
-            #                                                                 html.Button("SELECT ALL", id="select-all", n_clicks=0),
-            #                                                                 html.Button('Scrape United States Data', id='submit-val', n_clicks=0),
-
-            #                                                                 html.Div(id='container-button-basic',
-            #                                                                         children='Enter a value and press submit'),
-            #                                                             ]),
-            #                                                             ],style={"width":"30%", "margin-right":"20%",'display': 'inline-block'}),
-            #                                                         html.Div([
-            #                                                         html.Div([
-            #                                                             dcc.Dropdown(
-            #                                                                 id='my_dropdown3',
-            #                                                                 options=indicators_European_Union,
-            #                                                                 value=['producer-price-index-yy'],
-            #                                                                 multi=True,
-            #                                                                 clearable=False,
-            #                                                                 style={"width": "100%"}
-            #                                                             ),
-
-            #                                                             html.Div([
-            #                                                                 html.Button("SELECT ALL", id="select-all2", n_clicks=0),
-            #                                                                 html.Button('Scrape European Union Data', id='submit-val2', n_clicks=0),
-
-            #                                                                 html.Div(id='container-button-basic2',
-            #                                                                         children='Enter a value and press submit'),
-            #                                                             ],style={"width": "80%"}),
-
-
-
-                                                                            
-            #                                                             ],style={}),
-
-
-            #                                                                     ],style={"width": "30%",'textalign':"center",'display': 'inline-block'}),
-
-
-                                                                            
-            #                                                                 ],style={"margin-bottom":"10%","display": "flex"}),
-                                                                        
-
-
-
-
-
-            #             html.Div([
-            #                                                             html.Div([
-            #                                                                 html.Div([
-            #                                                                     dcc.Dropdown(
-            #                                                                         id='my_dropdown4',
-            #                                                                         options=indicators_interest,
-            #                                                                         value=['snb-interest-rate-decision'],
-            #                                                                         multi=True,
-            #                                                                         clearable=False,
-            #                                                                         style={"width": "100%",'display': 'inline-block'}
-            #                                                                     ),
-
-            #                                                                     html.Div([
-            #                                                                         html.Button('Scrape Interest Data', id='submit-val3', n_clicks=0),
-
-            #                                                                         html.Div(id='container-button-basic3',
-            #                                                                                 children='Enter a value and press submit'),
-            #                                                                     ],style={"width": "80%",'display': 'inline-block'}),
-
-
-
-                                                                            
-            #                                                                 ],style={'display': 'inline-block'}),
-            #                                                             ],style={'display': 'inline-block',"margin-right":"20%"}),
-
-
-
-
-
-
-
-
-
-            #                                                             html.Div([
-            #                                                                     html.Button('Update EUR/USD Exchange rate', id='submit-val-eur-usd', n_clicks=0),
-
-            #                                                                     html.Div(id='container-button-basic-eur-usd',
-            #                                                                             children='Enter a value and press submit')
-            #                                                             ],style={"width": "50%",'textalign':"center",'display': 'inline-block'}),
-
-
-            #                                                         ],style={"display": "flex"})
-            # ])
-
+           
             if i=='EUR_GBP':
 
                 return generate_currency(i,'European_Union','United_Kingdom')
@@ -498,12 +398,11 @@ def test(a,b):
     elif b== '/page-1/EUR_GBP':
         c1='European_Union'
         c2='United_Kingdom'
-    x= [option["value"] for option in globals()['listindicators_'+ c1]]    
+        x= [option["value"] for option in globals()['listindicators_'+ c1]]    
             
     return x    
 
 
-print(df_currencies['currencies'])
 
 
 for i in df_currencies['currencies']:
@@ -619,7 +518,6 @@ for i in df_currencies['currencies']:
 
 def get_data_interest_(n_clicks,value):
 
-    print(value)
     for i in value:
         if i=='snb-interest-rate-decision':
             country='switzerland'
@@ -632,36 +530,40 @@ def get_data_interest_(n_clicks,value):
     
     return 'Finished Scraping data'
 
-                
-@callback(    
-    Output('container-button-basic-eur-usd', 'children'),
-    Input('submit-val-eur-usd', 'n_clicks'),
-    prevent_initial_call=True
-)
 
-def update_exchange_rate(n_clicks):
-    
+def update_exchange_rate(n_clicks,path):
 
+    currency = path.split('/page-1/', 1)[-1].replace("_", "")
     import yfinance as yf    
     from datetime import datetime
         
     #Load Stock price
-    dfs = yf.download("EURUSD=X", start= datetime(2007,5,1),interval='1mo')
+    dfs = yf.download(currency+"=X", start= datetime(2007,5,1),interval='1mo')
     dfs.index =  pd.to_datetime(dfs.index, format='%Y-%m').strftime("%Y-%m")
     dfs = dfs[~dfs.index.duplicated(keep='last')]
     dfs = dfs.iloc[::1]
 
-    dfs = dfs.rename(columns={'Close': 'EUR/USD'})
+    dfs = dfs.rename(columns={'Close': currency})
     dfs=dfs.sort_values(by="Date", ascending=[0])
     
     
-    with open('./data/EURUSD=X.pkl', 'wb') as f:
+    with open('./data/'+currency+'=X'+'.pkl', 'wb') as f:
         pickle.dump(dfs, f)
 
 
     #dfs.to_csv("./data/EURUSD=X.csv",index=True,mode='a')
 
     return 'Finished Updating data'
+
+
+
+for i in df_currencies['currencies']:
+    callback( Output('container-button-basic-rate'+i, 'children'),
+    Input('submit-val-rate'+i, 'n_clicks'),
+    State('url2', 'pathname'),
+    prevent_initial_call=True)(update_exchange_rate)
+
+
 
 
 

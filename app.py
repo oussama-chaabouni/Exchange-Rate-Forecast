@@ -111,7 +111,7 @@ sidebar = html.Div(
         # ),
         dbc.Nav(
             [
-                dbc.NavLink("Data", href="/", active="exact"),
+                dbc.NavLink("Data", href="/home", active="exact"),
                 dbc.NavLink("Get New Data", href="/page-1", active="exact"),
                 dbc.NavLink("Forecast", href="/page-2", active="exact"),
             ],
@@ -142,23 +142,25 @@ df_currencies = pd.DataFrame(data)
 def render_page_content(pathname):
 
     for i in df_currencies['currencies']:
+        if pathname == "/home/"+i:
+            return home.layout    
+
+    for i in df_currencies['currencies']:
         if pathname == "/page-1/" + i: 
             
             return scrape_data.layout
 
-
-    if pathname == "/":
-        return home.layout
+        
 
                                             
 
-    elif pathname == "/page-1":
+    if pathname == "/page-1":
         return scrape_data.layout
 
-    elif pathname == "/page-1/test":
-        return scrape_data.layout
+    if pathname == "/home":
+        return home.layout
 
-    elif pathname == "/page-2":
+    if pathname == "/page-2":
         return forecast.layout
 
 
