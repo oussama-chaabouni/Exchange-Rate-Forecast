@@ -30,28 +30,53 @@ from dateutil.relativedelta import relativedelta
 import io
 import base64
 from datetime import date
+import math
+
+
 
 indicators_United_States=['producer-price-index-yy','consumer-price-index-yy','ism-manufacturing-pmi','ism-non-manufacturing-pmi',
 'consumer-confidence-index','retail-sales-yy','retail-sales-ex-autos-mm','durable-goods-orders','nonfarm-payrolls',
 'industrial-production-mm','trade-balance','housing-starts',
 'new-home-sales','building-permits','existing-home-sales','unemployment-rate','adp-nonfarm-employment-change',
 'ny-empire-state-manufacturing-index','chicago-pmi','capacity-utilization','factory-orders','durable-goods-orders-ex-transportation',
-'business-inventories-mm','pce-price-index-yy','pce-price-index-mm','core-pce-price-index-yy','core-pce-price-index-mm',
+'business-inventories-mm','pce-price-index-mm','core-pce-price-index-yy','core-pce-price-index-mm',
 'average-hourly-earnings-mm','fed-interest-rate-decision']
 
 indicators_European_Union=['producer-price-index-yy','consumer-price-index-yy',
 'markit-manufacturing-pmi','markit-services-pmi','consumer-confidence-indicator',
-'retail-sales-yy','industrial-production-yy','trade-balance','construction-output-yy',
-'unemployment-rate','markit-composite-pmi','ecb-deposit-rate-decision','zew-indicator-of-economic-sentiment','ecb-interest-rate-decision']
+'retail-sales-yy','industrial-production-yy','trade-balance',
+'unemployment-rate','ecb-deposit-rate-decision','zew-indicator-of-economic-sentiment','ecb-interest-rate-decision']
 
 
 indicators_United_Kingdom=['average-weekly-earnings-regular-pay','average-weekly-earnings-total-pay','claimant-count-change',
 'unemployment-rate','cpi-yy','core-cpi-mm','core-cpi-yy','ppi-input-mm',
-'ppi-input-yy','ppi-output-mm','ppi-output-yy','rpi-mm','rpi-yy'
+'ppi-input-yy','ppi-output-mm','ppi-output-yy','rpi-mm','rpi-yy','boe-interest-rate-decision',
+'trade-balance','trade-balance-non-eu','public-sector-net-borrowing','industrial-production-mm',
+'industrial-production-yy','manufacturing-production-mm','manufacturing-production-yy',
+'markit-construction-pmi','brc-retail-sales-monitor-yy','index-of-services',
+'retail-sales-mm','retail-sales-yy','rics-house-price-balance']
+
+
+indicators_Australia = ['anz-job-advertisements-mm','employment-change','full-employment-change','unemployment-rate',
+'rba-private-sector-credit-mm','trade-balance','aig-construction-index','aig-services-index','building-approvals-mm',
+'nab-business-conditions','retail-sales-mm','westpac-mi-consumer-sentiment-mm','home-loans-mm'
 ]
 
+indicators_Canada = ['foreign-securities-purchases','foreign-securities-purchases-by-canadians','gdp-mm','unemployment-rate',
+'cpi-mm','cpi-yy','core-cpi-mm','core-cpi-yy','trade-balance','ivey-pmi-nsa','core-retail-sales-mm','core-retail-sales-mm',
+'cmhc-housing-starts']
 
-indicators_interest = ['snb-interest-rate-decision','boe-interest-rate-decision']
+indicators_Japan = ['labor-cash-earnings-yy','unemployment-rate','domestic-corporate-goods-price-index-mm',
+'domestic-corporate-goods-price-index-yy','corporate-service-price-yy','national-consumer-price-index-yy','national-consumer-price-index-ex-fresh-food-yy',
+'tokyo-consumer-price-index-yy','tokyo-consumer-price-index-ex-fresh-food-yy','m2-money-stock-yy','monetary-base-yy','adjusted-trade-balance',
+'current-account-nsa','balance-of-payments','trade-balance','all-industry-activity-index-mm','capacity-utilization','tertiary-industry-activity-index-mm'
+,'household-spending-yy','large-retailers-sales-yy','retail-sales-mm']
+
+
+indicators_Switzerland = ['unemployment-rate','cpi-mm','cpi-yy','ppi-mm','ppi-yy','trade-balance','credit-suisse-economic-expectations',
+'procurech-manufacturing-pmi','retail-sales-yy']
+
+indicators_interest = ['snb-interest-rate-decision','boe-interest-rate-decision','boc-interest-rate-decision']
 
 countries =['switzerland','united-kingdom']
 
@@ -69,12 +94,27 @@ listindicators = []
 listindicators_European_Union = []
 listindicators_United_Kingdom = []
 listindicators_United_States = []
-
+listindicators_Australia = []
 # for i in list(df.columns):
 #     dicti={}
 #     dicti['label'] = i
 #     dicti['value'] = i
 #     listoptions.append(dicti)
+
+listindicators = []
+listindicators_European_Union = []
+listindicators_United_Kingdom = []
+listindicators_United_States = []
+listindicators_Australia = []
+listindicators_Canada = []
+listindicators_Japan = []
+listindicators_Switzerland = []
+
+for i in list(df.columns):
+    dicti={}
+    dicti['label'] = i
+    dicti['value'] = i
+    listoptions.append(dicti)
 
 for i in list(indicators_United_States):
     dic={}
@@ -94,6 +134,31 @@ for i in list(indicators_United_Kingdom):
     dic['label'] = i
     dic['value'] = i
     listindicators_United_Kingdom.append(dic)
+
+for i in list(indicators_Australia):
+    dic={}
+    dic['label'] = i
+    dic['value'] = i
+    listindicators_Australia.append(dic)
+
+for i in list(indicators_Canada):
+    dic={}
+    dic['label'] = i
+    dic['value'] = i
+    listindicators_Canada.append(dic)
+
+for i in list(indicators_Japan):
+    dic={}
+    dic['label'] = i
+    dic['value'] = i
+    listindicators_Japan.append(dic)
+
+for i in list(indicators_Switzerland):
+    dic={}
+    dic['label'] = i
+    dic['value'] = i
+    listindicators_Switzerland.append(dic)  
+
 
 PAGE_SIZE = 10
 
@@ -139,6 +204,13 @@ def update_data(end_date,currency,c1,c2):
     for k in  range(0,len(globals()['indicators_'+ li1])):
         data_frames[k]=df_list[k][[df_list[k].columns[0]]] 
 
+    for k in range(0,len(globals()['indicators_'+ li1])):
+        idx = pd.period_range(min(data_frames[k].index), max(data_frames[k].index),freq='M').strftime("%Y-%m")
+        
+        data_frames[k]=data_frames[k].reindex(idx).interpolate()
+        
+        data_frames[k].index.names = ['Date']   
+
     df_merged = reduce(lambda  left,right: pd.merge(left,right,on='Date',
                                                 how='outer'), data_frames)
     df_merged = df_merged.sort_values(by="Date", ascending=[0])
@@ -147,13 +219,13 @@ def update_data(end_date,currency,c1,c2):
 
     df_merged[df_merged.filter(like='interest-rate').columns] = df_merged[df_merged.filter(like='interest-rate').columns].bfill().ffill()
     
-    
+    df_merged = df_merged.interpolate()
 
     
-    mask = (df_merged.index >= '2007-05') & (df_merged.index <= end_date)
+    mask = df_merged.index <= end_date
     df_merged = df_merged.loc[mask]
 
-    df_merged = df_merged.ffill()
+    df_merged = df_merged.interpolate(limit=None)
 
 ###########################################################
 
@@ -172,7 +244,12 @@ def update_data(end_date,currency,c1,c2):
     for k in  range(0,len(globals()['indicators_'+ li2])):
         data_frames_EuroZone[k]=df_list_euro[k][[df_list_euro[k].columns[0]]]  
 
-
+    for k in range(0,len(globals()['indicators_'+ li2])):
+        idx = pd.period_range(min(data_frames_EuroZone[k].index), max(data_frames_EuroZone[k].index),freq='M').strftime("%Y-%m")
+        
+        data_frames_EuroZone[k]=data_frames_EuroZone[k].reindex(idx).interpolate()
+        
+        data_frames_EuroZone[k].index.names = ['Date']   
 
     df_merged_EuroZone = reduce(lambda  left,right: pd.merge(left,right,on='Date',
                                                 how='outer'), data_frames_EuroZone)
@@ -180,55 +257,68 @@ def update_data(end_date,currency,c1,c2):
     df_merged_EuroZone [~df_merged_EuroZone .index.duplicated(keep='first')]
     df_merged_EuroZone[df_merged_EuroZone.filter(like='interest-rate').columns] = df_merged_EuroZone[df_merged_EuroZone.filter(like='interest-rate').columns].bfill().ffill()
 
-    mask = (df_merged_EuroZone.index >= '2007-05') & (df_merged_EuroZone.index <= end_date)
+    mask = df_merged_EuroZone.index <= end_date
     df_merged_EuroZone = df_merged_EuroZone.loc[mask]
 
-    df_merged_EuroZone.loc[:, df_merged_EuroZone.columns != 'fed-interest-rate-decision US'] = df_merged_EuroZone.loc[:, df_merged_EuroZone.columns != 'fed-interest-rate-decision US'].ffill()
-
+    df_merged_EuroZone.loc[:, df_merged_EuroZone.columns != 'fed-interest-rate-decision US'] = df_merged_EuroZone.loc[:, df_merged_EuroZone.columns != 'fed-interest-rate-decision US'].interpolate(limit=None)
+    df_merged_EuroZone = df_merged_EuroZone.interpolate()
 ######################################################
     curr = currency.replace("_", "")
     with open('./data/'+curr+'=X.pkl', 'rb') as f:
         dfs = pickle.load(f)
 
-    dfr0 = pd.read_csv("./data/united-kingdom.boe-interest-rate-decision.csv", sep='\t')
-    dfr1 = pd.read_csv("./data/switzerland.snb-interest-rate-decision.csv", sep='\t')
-
-    dfr0['Date'] = pd.to_datetime(dfr0['Date'], format='%Y-%m').dt.strftime("%Y-%m")
-    dfr1['Date'] = pd.to_datetime(dfr1['Date'], format='%Y-%m').dt.strftime("%Y-%m")
-
-    dfr0 = dfr0.rename(columns={'ActualValue': 'boe-interest-rate-decision UK'}).set_index('Date').sort_values(by="Date", ascending=[0])
-    dfr1 = dfr1.rename(columns={'ActualValue': 'snb-interest-rate-decision Switzerland'}).set_index('Date').sort_values(by="Date", ascending=[0])
+    
 
 
-    dfr0 = dfr0.bfill().ffill()
-    dfr1 = dfr1.bfill().ffill()
-
-    mask = (dfs.index >= '2007-05') & (dfs.index <= end_date)
+    mask = dfs.index <= end_date
     dfs = dfs.loc[mask]
-    data_frames_Merged=[df_merged,df_merged_EuroZone,dfr0[['boe-interest-rate-decision UK']],dfr1[['snb-interest-rate-decision Switzerland']],dfs[curr].iloc[::-1]]
+    data_frames_Merged=[df_merged,df_merged_EuroZone,
+    dfs[curr].iloc[::-1]]
 
 
 
 
     dfm = reduce(lambda  left,right: pd.merge(left,right,on='Date',
-                                                how='left'), data_frames_Merged)
+                                                how='inner'), data_frames_Merged)
+
+
+
+    outer =reduce(lambda  left,right: pd.merge(left,right,on='Date',
+                                                how='outer'), data_frames_Merged).sort_values(by="Date", ascending=[0])
+
+
 
 
     dfm = dfm.sort_values(by="Date", ascending=[0])
     dfm=dfm [~dfm .index.duplicated(keep='first')]
-    dfm['boe-interest-rate-decision UK'] = dfm['boe-interest-rate-decision UK'].bfill().ffill()
-    dfm['snb-interest-rate-decision Switzerland'] = dfm['snb-interest-rate-decision Switzerland'].bfill().ffill()
+    #dfm['boe-interest-rate-decision UK'] = dfm['boe-interest-rate-decision UK'].bfill().ffill()
+    #dfm['snb-interest-rate-decision Switzerland'] = dfm['snb-interest-rate-decision Switzerland'].bfill().ffill()
     #df['EUR/USD'] = df['EUR/USD'].bfill().ffill().interpolate()
 
-    mask = (dfm.index >= '2007-05') & (dfm.index <= end_date)
+    dfm = dfm.interpolate()
+
+    mask = dfm.index <= end_date
     dfm = dfm.loc[mask]
 
-    
+    outer=outer [~outer .index.duplicated(keep='first')]
+
+    dfm.loc[end_date] = outer.loc[end_date] 
+    dfm = dfm.sort_values(by="Date", ascending=[0])
+
     dfm[1:]=dfm[1:].bfill()
 
+
+
+
+
+    dfm = dfm.interpolate()
     for i in dfm.columns:
+        if np.isnan(dfm[i][:1].item()) :
             dfm[i]=dfm[i].shift(-1, axis = 0)
             dfm[i] = dfm[i].ffill()
+
+
+       
     
     #df['EUR/USD']=dfs['EUR/USD'].values
 
@@ -327,7 +417,7 @@ def generate_currency_home(currencies,country1,country2):
                                                         page_current=0,
                                                     page_size=PAGE_SIZE,
                                                     page_action='custom',                                                      
-
+                                                    page_count = math.ceil(len(pd.read_csv("./data/macro_data_"+str(currencies)+'.csv').iloc[::-1])/PAGE_SIZE),
                                                         style_data_conditional=[
                                                             
                 {
@@ -435,7 +525,7 @@ def render_page_content_home(pathname="/home"):
 
             if i=='GBP_USD':
 
-                return generate_currency_home(i,'United_Kingdom','United States')
+                return generate_currency_home(i,'United_Kingdom','United_States')
 
 
             if i=='GBP_CHF':
@@ -498,13 +588,52 @@ def update_table(page_current,page_size,date_value,n_clicks,path):
     currency = path.split('/home/', 1)[-1]
 
     if currency == 'EUR_USD':
-        c1='united-states'
-        c2='european-union'
+        c1='european-union'
+        c2='united-states'
         
     elif currency == 'EUR_GBP':
         c1='european-union'
         c2='united-kingdom'
+        
+    elif currency== 'EUR_AUD':
+        c1='european-union'
+        c2='australia'
 
+    elif currency== 'EUR_CAD':
+        c1='european-union'
+        c2='canada'
+
+    elif currency== 'EUR_JPY':
+        c1='european-union'
+        c2='japan'
+
+    elif currency== 'EUR_CHF':
+        c1='european-union'
+        c2='switzerland'
+       
+    elif currency== 'USD_JPY':
+        c1='united-states'
+        c2='japan'
+
+    elif currency== 'USD_CAD':
+        c1='united-states'
+        c2='canada'        
+
+    elif currency== 'USD_CHF':
+        c1='united-states'
+        c2='switzerland' 
+
+    elif currency== 'GBP_USD':
+        c1='united-kingdom'
+        c2='united-states'
+
+    elif currency== 'GBP_CHF':
+        c1='united-kingdom'
+        c2='switzerland'
+
+    elif currency== 'GBP_JPY':
+        c1='united-kingdom'
+        c2='japan'                
 
     print(currency)
     date_object = date.fromisoformat(date_value)
@@ -544,14 +673,54 @@ def update_graph(my_dropdown,path):
     currency = path.split('/home/', 1)[-1]
 
     if currency == 'EUR_USD':
-        c1='united-states'
-        c2='european-union'
+        c1='european-union'
+        c2='united-states'
         
     elif currency == 'EUR_GBP':
         c1='european-union'
         c2='united-kingdom'
+        
+    elif currency== 'EUR_AUD':
+        c1='european-union'
+        c2='australia'
 
+    elif currency== 'EUR_CAD':
+        c1='european-union'
+        c2='canada'
 
+    elif currency== 'EUR_JPY':
+        c1='european-union'
+        c2='japan'
+
+    elif currency== 'EUR_CHF':
+        c1='european-union'
+        c2='switzerland'
+       
+    elif currency== 'USD_JPY':
+        c1='united-states'
+        c2='japan'
+
+    elif currency== 'USD_CAD':
+        c1='united-states'
+        c2='canada'        
+
+    elif currency== 'USD_CHF':
+        c1='united-states'
+        c2='switzerland' 
+
+    elif currency== 'GBP_USD':
+        c1='united-kingdom'
+        c2='united-states'
+
+    elif currency== 'GBP_CHF':
+        c1='united-kingdom'
+        c2='switzerland'
+
+    elif currency== 'GBP_JPY':
+        c1='united-kingdom'
+        c2='japan'  
+
+        
     df = pd.read_csv("./data/macro_data_"+currency+".csv").set_index('Date')
     df = df.iloc[::-1]
     full_data= df.copy()

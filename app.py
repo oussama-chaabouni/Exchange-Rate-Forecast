@@ -113,7 +113,7 @@ sidebar = html.Div(
             [
                 dbc.NavLink("Data", href="/home", active="exact"),
                 dbc.NavLink("Get New Data", href="/page-1", active="exact"),
-                dbc.NavLink("Forecast", href="/page-2", active="exact"),
+                dbc.NavLink("Forecast", href="/forecast", active="exact"),
             ],
             vertical=True,
             pills=True,
@@ -150,7 +150,10 @@ def render_page_content(pathname):
             
             return scrape_data.layout
 
-        
+    for i in df_currencies['currencies']:
+        if pathname == "/forecast/" + i: 
+            
+            return forecast.layout        
 
                                             
 
@@ -160,7 +163,7 @@ def render_page_content(pathname):
     if pathname == "/home":
         return home.layout
 
-    if pathname == "/page-2":
+    if pathname == "/forecast":
         return forecast.layout
 
 

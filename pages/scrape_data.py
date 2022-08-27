@@ -32,21 +32,41 @@ indicators_United_States=['producer-price-index-yy','consumer-price-index-yy','i
 'industrial-production-mm','trade-balance','housing-starts',
 'new-home-sales','building-permits','existing-home-sales','unemployment-rate','adp-nonfarm-employment-change',
 'ny-empire-state-manufacturing-index','chicago-pmi','capacity-utilization','factory-orders','durable-goods-orders-ex-transportation',
-'business-inventories-mm','pce-price-index-yy','pce-price-index-mm','core-pce-price-index-yy','core-pce-price-index-mm',
+'business-inventories-mm','pce-price-index-mm','core-pce-price-index-yy','core-pce-price-index-mm',
 'average-hourly-earnings-mm','fed-interest-rate-decision']
 
 indicators_European_Union=['producer-price-index-yy','consumer-price-index-yy',
 'markit-manufacturing-pmi','markit-services-pmi','consumer-confidence-indicator',
-'retail-sales-yy','industrial-production-yy','trade-balance','construction-output-yy',
+'retail-sales-yy','industrial-production-yy','trade-balance',
 'unemployment-rate','markit-composite-pmi','ecb-deposit-rate-decision','zew-indicator-of-economic-sentiment','ecb-interest-rate-decision']
 
 
 indicators_United_Kingdom=['average-weekly-earnings-regular-pay','average-weekly-earnings-total-pay','claimant-count-change',
 'unemployment-rate','cpi-yy','core-cpi-mm','core-cpi-yy','ppi-input-mm',
-'ppi-input-yy','ppi-output-mm','ppi-output-yy','rpi-mm','rpi-yy'
+'ppi-input-yy','ppi-output-mm','ppi-output-yy','rpi-mm','rpi-yy','boe-interest-rate-decision',
+'trade-balance','trade-balance-non-eu','public-sector-net-borrowing','industrial-production-mm',
+'industrial-production-yy','manufacturing-production-mm','manufacturing-production-yy',
+'markit-construction-pmi','brc-retail-sales-monitor-yy','index-of-services',
+'retail-sales-mm','retail-sales-yy','rics-house-price-balance']
+
+indicators_Australia = ['anz-job-advertisements-mm','employment-change','full-employment-change','unemployment-rate',
+'rba-private-sector-credit-mm','trade-balance','aig-construction-index','aig-services-index','building-approvals-mm',
+'nab-business-conditions','retail-sales-mm','westpac-mi-consumer-sentiment-mm','home-loans-mm'
 ]
 
+indicators_Canada = ['foreign-securities-purchases','foreign-securities-purchases-by-canadians','gdp-mm','unemployment-rate',
+'cpi-mm','cpi-yy','core-cpi-mm','core-cpi-yy','trade-balance','ivey-pmi-nsa','core-retail-sales-mm','core-retail-sales-mm',
+'cmhc-housing-starts']
 
+indicators_Japan = ['labor-cash-earnings-yy','unemployment-rate','domestic-corporate-goods-price-index-mm',
+'domestic-corporate-goods-price-index-yy','corporate-service-price-yy','national-consumer-price-index-yy','national-consumer-price-index-ex-fresh-food-yy',
+'tokyo-consumer-price-index-yy','tokyo-consumer-price-index-ex-fresh-food-yy','m2-money-stock-yy','monetary-base-yy','adjusted-trade-balance',
+'current-account-nsa','balance-of-payments','trade-balance','all-industry-activity-index-mm','capacity-utilization','tertiary-industry-activity-index-mm'
+,'household-spending-yy','large-retailers-sales-yy','retail-sales-mm']
+
+
+indicators_Switzerland = ['unemployment-rate','cpi-mm','cpi-yy','ppi-mm','ppi-yy','trade-balance','credit-suisse-economic-expectations',
+'procurech-manufacturing-pmi','retail-sales-yy']
 
 indicators_interest = ['snb-interest-rate-decision','boe-interest-rate-decision']
 
@@ -65,6 +85,10 @@ listindicators = []
 listindicators_European_Union = []
 listindicators_United_Kingdom = []
 listindicators_United_States = []
+listindicators_Australia = []
+listindicators_Canada = []
+listindicators_Japan = []
+listindicators_Switzerland = []
 
 for i in list(df.columns):
     dicti={}
@@ -91,12 +115,31 @@ for i in list(indicators_United_Kingdom):
     dic['value'] = i
     listindicators_United_Kingdom.append(dic)
 
+for i in list(indicators_Australia):
+    dic={}
+    dic['label'] = i
+    dic['value'] = i
+    listindicators_Australia.append(dic)
 
+for i in list(indicators_Canada):
+    dic={}
+    dic['label'] = i
+    dic['value'] = i
+    listindicators_Canada.append(dic)
 
+for i in list(indicators_Japan):
+    dic={}
+    dic['label'] = i
+    dic['value'] = i
+    listindicators_Japan.append(dic)
 
+for i in list(indicators_Switzerland):
+    dic={}
+    dic['label'] = i
+    dic['value'] = i
+    listindicators_Switzerland.append(dic)        
 
 def get_data(country,indicator):
-
     url = "https://www.mql5.com/en/economic-calendar/"+ country + '/' +indicator+"/export"
 
     opener = urllib.request.build_opener()
@@ -345,7 +388,7 @@ def render_page_content_(pathname="/page-1"):
 
             if i=='GBP_USD':
 
-                return generate_currency(i,'United_Kingdom','United States')
+                return generate_currency(i,'United_Kingdom','United_States')
 
 
             if i=='GBP_CHF':
@@ -388,18 +431,59 @@ def render_page_content_(pathname="/page-1"):
 
 
 
-def test(a,b):
-    if b == '/page-1/EUR_USD':
+def test(a,path):
+    currency = path.split('/page-1/', 1)[-1]
+    if currency == 'EUR_USD':
         c1='European_Union'
         c2='United_States'
-        x= [option["value"] for option in globals()['listindicators_'+ c1]]
-            
-            
-    elif b== '/page-1/EUR_GBP':
+             
+    elif currency== 'EUR_GBP':
         c1='European_Union'
         c2='United_Kingdom'
-        x= [option["value"] for option in globals()['listindicators_'+ c1]]    
-            
+
+    elif currency== 'EUR_AUD':
+        c1='European_Union'
+        c2='Australia'
+
+
+    elif currency== 'EUR_CAD':
+        c1='European_Union'
+        c2='Canada'
+
+    elif currency== 'EUR_JPY':
+        c1='European_Union'
+        c2='Japan'
+
+    elif currency== 'EUR_CHF':
+        c1='European_Union'
+        c2='Switzerland'
+       
+    elif currency== 'USD_JPY':
+        c1='United_States'
+        c2='Japan'
+
+    elif currency== 'USD_CAD':
+        c1='United_States'
+        c2='Canada'        
+
+    elif currency== 'USD_CHF':
+        c1='United_States'
+        c2='Switzerland' 
+
+    elif currency== 'GBP_USD':
+        c1='United_Kingdom'
+        c2='United_States'
+
+    elif currency== 'GBP_CHF':
+        c1='United_Kingdom'
+        c2='Switzerland'
+
+    elif currency== 'GBP_JPY':
+        c1='United_Kingdom'
+        c2='Japan'
+
+
+    x= [option["value"] for option in globals()['listindicators_'+ c1]]        
     return x    
 
 
@@ -422,17 +506,64 @@ for i in df_currencies['currencies']:
 
 
 
-def test2(a,b):
+def test2(a,path):
 
-    if b == '/page-1/EUR_USD':
+    currency = path.split('/page-1/', 1)[-1]
+    if currency == 'EUR_USD':
         c1='European_Union'
         c2='United_States'
-        x= [option["value"] for option in globals()['listindicators_'+ c2]]
-            
-            
-    elif b== '/page-1/EUR_GBP':
+             
+    elif currency== 'EUR_GBP':
         c1='European_Union'
         c2='United_Kingdom'
+
+    elif currency== 'EUR_AUD':
+        c1='European_Union'
+        c2='Australia'
+
+
+    elif currency== 'EUR_CAD':
+        c1='European_Union'
+        c2='Canada'
+
+    elif currency== 'EUR_JPY':
+        c1='European_Union'
+        c2='Japan'
+
+    elif currency== 'EUR_CHF':
+        c1='European_Union'
+        c2='Switzerland'
+       
+    elif currency== 'USD_JPY':
+        c1='United_States'
+        c2='Japan'
+
+    elif currency== 'USD_CAD':
+        c1='United_States'
+        c2='Canada'        
+
+    elif currency== 'USD_CHF':
+        c1='United_States'
+        c2='Switzerland' 
+
+    elif currency== 'GBP_USD':
+        c1='United_Kingdom'
+        c2='United_States'
+
+    elif currency== 'GBP_CHF':
+        c1='United_Kingdom'
+        c2='Switzerland'
+
+    elif currency== 'GBP_JPY':
+        c1='United_Kingdom'
+        c2='Japan'
+
+
+
+
+
+
+        
     x= [option["value"] for option in globals()['listindicators_'+ c2]]        
     
             
@@ -444,14 +575,61 @@ for i in df_currencies['currencies']:
 
 
 
-def get_data_in(n_clicks,value,b):
+def get_data_in(n_clicks,value,path):
+    currency = path.split('/page-1/', 1)[-1]
 
-    if b == '/page-1/EUR_USD':
-        country='european-union'
-    elif b== '/page-1/EUR_GBP':
-        country='european-union'
+    if currency == 'EUR_USD':
+        c1='european-union'
+        c2='united-states'
+        
+    elif currency == 'EUR_GBP':
+        c1='european-union'
+        c2='united-kingdom'
+        
+    elif currency== 'EUR_AUD':
+        c1='european-union'
+        c2='australia'
+
+    elif currency== 'EUR_CAD':
+        c1='european-union'
+        c2='canada'
+
+    elif currency== 'EUR_JPY':
+        c1='european-union'
+        c2='japan'
+
+    elif currency== 'EUR_CHF':
+        c1='european-union'
+        c2='switzerland'
+       
+    elif currency== 'USD_JPY':
+        c1='united-states'
+        c2='japan'
+
+    elif currency== 'USD_CAD':
+        c1='united-states'
+        c2='canada'        
+
+    elif currency== 'USD_CHF':
+        c1='united-states'
+        c2='switzerland' 
+
+    elif currency== 'GBP_USD':
+        c1='united-kingdom'
+        c2='united-states'
+
+    elif currency== 'GBP_CHF':
+        c1='united-kingdom'
+        c2='switzerland'
+
+    elif currency== 'GBP_JPY':
+        c1='united-kingdom'
+        c2='japan'
+
+
+
     for i in value:
-        get_data(country,i)
+        get_data(c1,i)
         time.sleep(3)   
         #d.drop(d.columns[0], axis=1)
         #d.columns = ['Date','Actual','Forecast','Previous']
@@ -477,15 +655,60 @@ for i in df_currencies['currencies']:
 
 
 
-def get_data_in(n_clicks,value,b):
+def get_data_in(n_clicks,value,path):
 
-    if b == '/page-1/EUR_USD':
-        country = 'united-states'
-    elif b== '/page-1/EUR_GBP':
-        country = 'united-kingdom'
+    currency = path.split('/page-1/', 1)[-1]
+
+    if currency == 'EUR_USD':
+        c1='european-union'
+        c2='united-states'
+        
+    elif currency == 'EUR_GBP':
+        c1='european-union'
+        c2='united-kingdom'
+        
+    elif currency== 'EUR_AUD':
+        c1='european-union'
+        c2='australia'
+
+    elif currency== 'EUR_CAD':
+        c1='european-union'
+        c2='canada'
+
+    elif currency== 'EUR_JPY':
+        c1='european-union'
+        c2='japan'
+
+    elif currency== 'EUR_CHF':
+        c1='european-union'
+        c2='switzerland'
+       
+    elif currency== 'USD_JPY':
+        c1='united-states'
+        c2='japan'
+
+    elif currency== 'USD_CAD':
+        c1='united-states'
+        c2='canada'        
+
+    elif currency== 'USD_CHF':
+        c1='united-states'
+        c2='switzerland' 
+
+    elif currency== 'GBP_USD':
+        c1='united-kingdom'
+        c2='united-states'
+
+    elif currency== 'GBP_CHF':
+        c1='united-kingdom'
+        c2='switzerland'
+
+    elif currency== 'GBP_JPY':
+        c1='united-kingdom'
+        c2='japan'
 
     for i in value:
-        get_data(country,i)
+        get_data(c2,i)
         time.sleep(3)   
     time.sleep(5)
     
