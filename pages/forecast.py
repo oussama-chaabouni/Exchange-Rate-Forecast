@@ -162,10 +162,10 @@ def plot_forecasts_features(list,feature,model_ppi,data):
 def stationary(feature,data):
   df = data.iloc[::-1].copy()
   stats, p, lags, critical_values = kpss(df[feature], 'c',nlags='legacy')
-  if p < 0.05 :
-    return False
-  else:
+  if p < 0.01 :
     return True
+  else:
+    return False
 
 
 

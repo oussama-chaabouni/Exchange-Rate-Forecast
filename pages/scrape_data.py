@@ -47,30 +47,28 @@ indicators_United_Kingdom=['average-weekly-earnings-regular-pay','average-weekly
 'trade-balance','trade-balance-non-eu','public-sector-net-borrowing','industrial-production-mm',
 'industrial-production-yy','manufacturing-production-mm','manufacturing-production-yy',
 'markit-construction-pmi','brc-retail-sales-monitor-yy','index-of-services',
-'retail-sales-mm','retail-sales-yy','rics-house-price-balance']
+'retail-sales-mm','retail-sales-yy','rics-house-price-balance','boe-interest-rate-decision']
 
 indicators_Australia = ['anz-job-advertisements-mm','employment-change','full-employment-change','unemployment-rate',
 'rba-private-sector-credit-mm','trade-balance','aig-construction-index','aig-services-index','building-approvals-mm',
-'nab-business-conditions','retail-sales-mm','westpac-mi-consumer-sentiment-mm','home-loans-mm'
+'nab-business-conditions','retail-sales-mm','westpac-mi-consumer-sentiment-mm','home-loans-mm','rba-interest-rate-decision'
 ]
 
 indicators_Canada = ['foreign-securities-purchases','foreign-securities-purchases-by-canadians','gdp-mm','unemployment-rate',
-'cpi-mm','cpi-yy','core-cpi-mm','core-cpi-yy','trade-balance','ivey-pmi-nsa','core-retail-sales-mm','core-retail-sales-mm',
-'cmhc-housing-starts']
+'cpi-mm','cpi-yy','core-cpi-mm','core-cpi-yy','trade-balance','ivey-pmi-nsa','core-retail-sales-mm',
+'cmhc-housing-starts','boc-interest-rate-decision']
 
 indicators_Japan = ['labor-cash-earnings-yy','unemployment-rate','domestic-corporate-goods-price-index-mm',
 'domestic-corporate-goods-price-index-yy','corporate-service-price-yy','national-consumer-price-index-yy','national-consumer-price-index-ex-fresh-food-yy',
 'tokyo-consumer-price-index-yy','tokyo-consumer-price-index-ex-fresh-food-yy','m2-money-stock-yy','monetary-base-yy','adjusted-trade-balance',
 'current-account-nsa','balance-of-payments','trade-balance','all-industry-activity-index-mm','capacity-utilization','tertiary-industry-activity-index-mm'
-,'household-spending-yy','large-retailers-sales-yy','retail-sales-mm']
+,'household-spending-yy','large-retailers-sales-yy','retail-sales-mm','boj-interest-rate-decision']
 
 
 indicators_Switzerland = ['unemployment-rate','cpi-mm','cpi-yy','ppi-mm','ppi-yy','trade-balance','credit-suisse-economic-expectations',
-'procurech-manufacturing-pmi','retail-sales-yy']
+'procurech-manufacturing-pmi','retail-sales-yy','snb-interest-rate-decision']
 
-indicators_interest = ['snb-interest-rate-decision','boe-interest-rate-decision']
 
-countries =['switzerland','united-kingdom']
 
 
 df = pd.read_csv("./data/macro_data_final2.csv").set_index('Date')
@@ -192,7 +190,7 @@ def generate_currency_button(currencies):
     return dbc.DropdownMenuItem(
                       str(currencies),
                       className="mr-1",
-                      href='/page-1/'+currencies,
+                      href='/data/'+currencies,
                       id=str(currencies))
 
 
@@ -256,36 +254,6 @@ def generate_currency(currencies,country1,country2):
 
 
             html.Div([
-                                                            html.Div([
-                                                                html.Div([
-                                                                    dcc.Dropdown(
-                                                                        id='my_dropdown4'+str(currencies),
-                                                                        options=indicators_interest,
-                                                                        value=['snb-interest-rate-decision'],
-                                                                        multi=True,
-                                                                        clearable=False,
-                                                                        style={"width": "100%",'display': 'inline-block'}
-                                                                    ),
-
-                                                                    html.Div([
-                                                                        html.Button('Scrape Interest Data', id='submit-val3'+str(currencies), n_clicks=0),
-
-                                                                        html.Div(id='container-button-basic3'+str(currencies),
-                                                                                children='Enter a value and press submit'),
-                                                                    ],style={"width": "80%",'display': 'inline-block'}),
-
-
-
-                                                                
-                                                                ],style={'display': 'inline-block'}),
-                                                            ],style={'display': 'inline-block',"margin-right":"20%"}),
-
-
-
-
-
-
-
 
 
                                                             html.Div([
@@ -346,10 +314,10 @@ data = {'currencies': ['EUR_USD', 'EUR_GBP', 'EUR_AUD', 'EUR_CAD','EUR_JPY','EUR
 
 
 @callback(Output("page-content2", "children"), [Input("url2", "pathname")])
-def render_page_content_(pathname="/page-1"):
+def render_page_content_(pathname="/data"):
 
     for i in df_currencies['currencies']:
-        if pathname == "/page-1/" + i: 
+        if pathname == "/data/" + i: 
             if i=='EUR_USD':
                 return generate_currency(i,'European_Union','United_States')
            
@@ -432,7 +400,7 @@ def render_page_content_(pathname="/page-1"):
 
 
 def test(a,path):
-    currency = path.split('/page-1/', 1)[-1]
+    currency = path.split('/data/', 1)[-1]
     if currency == 'EUR_USD':
         c1='European_Union'
         c2='United_States'
@@ -508,7 +476,7 @@ for i in df_currencies['currencies']:
 
 def test2(a,path):
 
-    currency = path.split('/page-1/', 1)[-1]
+    currency = path.split('/data/', 1)[-1]
     if currency == 'EUR_USD':
         c1='European_Union'
         c2='United_States'
@@ -576,7 +544,7 @@ for i in df_currencies['currencies']:
 
 
 def get_data_in(n_clicks,value,path):
-    currency = path.split('/page-1/', 1)[-1]
+    currency = path.split('/data/', 1)[-1]
 
     if currency == 'EUR_USD':
         c1='european-union'
@@ -657,7 +625,7 @@ for i in df_currencies['currencies']:
 
 def get_data_in(n_clicks,value,path):
 
-    currency = path.split('/page-1/', 1)[-1]
+    currency = path.split('/data/', 1)[-1]
 
     if currency == 'EUR_USD':
         c1='european-union'
@@ -756,12 +724,12 @@ def get_data_interest_(n_clicks,value):
 
 def update_exchange_rate(n_clicks,path):
 
-    currency = path.split('/page-1/', 1)[-1].replace("_", "")
+    currency = path.split('/data/', 1)[-1].replace("_", "")
     import yfinance as yf    
     from datetime import datetime
         
     #Load Stock price
-    dfs = yf.download(currency+"=X", start= datetime(2007,5,1),interval='1mo')
+    dfs = yf.download(currency+"=X", start= datetime(2000,5,1),interval='1mo')
     dfs.index =  pd.to_datetime(dfs.index, format='%Y-%m').strftime("%Y-%m")
     dfs = dfs[~dfs.index.duplicated(keep='last')]
     dfs = dfs.iloc[::1]

@@ -45,40 +45,35 @@ indicators_United_States=['producer-price-index-yy','consumer-price-index-yy','i
 indicators_European_Union=['producer-price-index-yy','consumer-price-index-yy',
 'markit-manufacturing-pmi','markit-services-pmi','consumer-confidence-indicator',
 'retail-sales-yy','industrial-production-yy','trade-balance',
-'unemployment-rate','ecb-deposit-rate-decision','zew-indicator-of-economic-sentiment','ecb-interest-rate-decision']
+'unemployment-rate','markit-composite-pmi','ecb-deposit-rate-decision','zew-indicator-of-economic-sentiment','ecb-interest-rate-decision']
 
 
 indicators_United_Kingdom=['average-weekly-earnings-regular-pay','average-weekly-earnings-total-pay','claimant-count-change',
 'unemployment-rate','cpi-yy','core-cpi-mm','core-cpi-yy','ppi-input-mm',
-'ppi-input-yy','ppi-output-mm','ppi-output-yy','rpi-mm','rpi-yy','boe-interest-rate-decision',
+'ppi-input-yy','ppi-output-mm','ppi-output-yy','rpi-mm','rpi-yy',
 'trade-balance','trade-balance-non-eu','public-sector-net-borrowing','industrial-production-mm',
 'industrial-production-yy','manufacturing-production-mm','manufacturing-production-yy',
 'markit-construction-pmi','brc-retail-sales-monitor-yy','index-of-services',
-'retail-sales-mm','retail-sales-yy','rics-house-price-balance']
-
+'retail-sales-mm','retail-sales-yy','rics-house-price-balance','boe-interest-rate-decision']
 
 indicators_Australia = ['anz-job-advertisements-mm','employment-change','full-employment-change','unemployment-rate',
 'rba-private-sector-credit-mm','trade-balance','aig-construction-index','aig-services-index','building-approvals-mm',
-'nab-business-conditions','retail-sales-mm','westpac-mi-consumer-sentiment-mm','home-loans-mm'
+'nab-business-conditions','retail-sales-mm','westpac-mi-consumer-sentiment-mm','home-loans-mm','rba-interest-rate-decision'
 ]
 
 indicators_Canada = ['foreign-securities-purchases','foreign-securities-purchases-by-canadians','gdp-mm','unemployment-rate',
-'cpi-mm','cpi-yy','core-cpi-mm','core-cpi-yy','trade-balance','ivey-pmi-nsa','core-retail-sales-mm','core-retail-sales-mm',
-'cmhc-housing-starts']
+'cpi-mm','cpi-yy','core-cpi-mm','core-cpi-yy','trade-balance','ivey-pmi-nsa','core-retail-sales-mm',
+'cmhc-housing-starts','boc-interest-rate-decision']
 
 indicators_Japan = ['labor-cash-earnings-yy','unemployment-rate','domestic-corporate-goods-price-index-mm',
 'domestic-corporate-goods-price-index-yy','corporate-service-price-yy','national-consumer-price-index-yy','national-consumer-price-index-ex-fresh-food-yy',
 'tokyo-consumer-price-index-yy','tokyo-consumer-price-index-ex-fresh-food-yy','m2-money-stock-yy','monetary-base-yy','adjusted-trade-balance',
 'current-account-nsa','balance-of-payments','trade-balance','all-industry-activity-index-mm','capacity-utilization','tertiary-industry-activity-index-mm'
-,'household-spending-yy','large-retailers-sales-yy','retail-sales-mm']
+,'household-spending-yy','large-retailers-sales-yy','retail-sales-mm','boj-interest-rate-decision']
 
 
 indicators_Switzerland = ['unemployment-rate','cpi-mm','cpi-yy','ppi-mm','ppi-yy','trade-balance','credit-suisse-economic-expectations',
-'procurech-manufacturing-pmi','retail-sales-yy']
-
-indicators_interest = ['snb-interest-rate-decision','boe-interest-rate-decision','boc-interest-rate-decision']
-
-countries =['switzerland','united-kingdom']
+'procurech-manufacturing-pmi','retail-sales-yy','snb-interest-rate-decision']
 
 data = {'currencies': ['EUR_USD', 'EUR_GBP', 'EUR_AUD', 'EUR_CAD','EUR_JPY','EUR_CHF','USD_JPY','USD_CAD','USD_CHF','GBP_USD','GBP_CHF','GBP_JPY']}
 df_currencies_ = pd.DataFrame(data)
@@ -217,7 +212,7 @@ def update_data(end_date,currency,c1,c2):
     df_merged [~df_merged .index.duplicated(keep='first')]
 
 
-    df_merged[df_merged.filter(like='interest-rate').columns] = df_merged[df_merged.filter(like='interest-rate').columns].bfill().ffill()
+    df_merged[df_merged.filter(like='interest-rate').columns] = df_merged[df_merged.filter(like='interest-rate').columns].bfill(limit=None).ffill(limit=None)
     
     df_merged = df_merged.interpolate()
 
@@ -380,7 +375,7 @@ def generate_currency_home(currencies,country1,country2):
                                             dcc.Dropdown(
                                                 id='my_dropdown'+str(currencies),
                                                 options=listoptions,
-                                                value=[currencies.split('/page-1/', 1)[-1].replace("_", "")],
+                                                value=[currencies.split('/data/', 1)[-1].replace("_", "")],
                                                 multi=True,
                                                 clearable=False,
                                                 style={"width": "50%",'textalign':"center"}
