@@ -1,4 +1,4 @@
-# Exchange-Rate-Forecast
+# Exchange Rate Forecast
 
 This app uses ARIMAX model to forecast exchange rates 
 
